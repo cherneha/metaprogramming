@@ -2,42 +2,6 @@ import glob
 from utils import only_spaces_and_special_characters, line_beggining_spaces_edit, get_side_spaces, delete_left_right, indentation_message, only_spaces_and_newlines
 
 
-def run_formatter():
-    repeat = 'yes'
-    while(repeat == 'yes' or repeat == 'Yes' or repeat == 'YES' or repeat == 'y'
-          or repeat == 'Y' or repeat == 'так' or repeat == 'да'):
-        print("What do u want, dude?")
-        print("1. analyse my govnocode structure")
-        print("2. structure my code normally")
-        print("3. create new structuring template (bad idea though)")
-        choise = 0
-        while choise == 0:
-            choise = int(input("choose your option (1 - 3)"))
-            if choise == 1:
-                print("no chances to your govnocode!!!")
-                project = input("give me your shitty project dir address")
-                edit_dir_files('/home/stacy/CODE/metaprogramming/EDITOR-master', 4, False, False)
-            elif choise == 2:
-                print("let's see if it's even possible")
-                project = input("give me your shitty project dir address")
-                edit_dir_files('/home/stacy/CODE/metaprogramming/EDITOR-master', 4, False, True)
-            elif choise == 3:
-                print("u think u can make a normal template??")
-                indentation = int(input("number of spaces for indentation: "))
-                answer = ''
-                while answer != 'a' and answer != 'd':
-                    answer = input("Add or delete spaces around operators? (a/d)")
-                if answer == 'a':
-                    del_operator_spaces = False
-                else:
-                    del_operator_spaces = True
-                edit_dir_files('/home/stacy/CODE/metaprogramming/EDITOR-master', indentation, del_operator_spaces, True)
-            else:
-                print("well, u can't even pick an option normally")
-                choise = 0
-
-        repeat = input("Repeat?")
-
 def analyze_code(filepath, indentation, del_operator_spaces, max_len):
     file = open(filepath, mode='r')
     code = file.readlines()
@@ -153,7 +117,6 @@ def fix_indentations(filepath, indentation, edit):
                     n = new_line.find(';')
                     ending = new_line[n + 1:]
                     if not only_spaces_and_special_characters(ending):
-                        print(ending)
                         code = [ending] + code
                         new_line = new_line[:(n + 1)] + '\n'
                     break
@@ -217,7 +180,7 @@ def new_lines_between_blocks(filepath, n):
                 if nesting == 0:
                     free_lines = 0
                     j = i + 1
-                    while only_spaces_and_newlines(code[j]):
+                    while j < len(code) and only_spaces_and_newlines(code[j]):
                         free_lines += 1
                         j += 1
                     free_lines_diff = n - free_lines

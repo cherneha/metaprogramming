@@ -1,3 +1,9 @@
+#####Main functionality:
+- fix indentations according to nesting
+- add or delete spaces around operators
+- add lines between main blocks of code
+- move code after semicolos to new lines
+
 Розробити консольну iнтерактивну утилiту форматування (позицiйне табу-
 лювання) C++ кодiв.
 Система повинна взаємодiяти з користувачем через

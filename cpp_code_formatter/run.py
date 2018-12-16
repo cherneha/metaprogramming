@@ -1,3 +1,3 @@
-import formatter
+import interactor
 if __name__ == '__main__':
-    formatter.run_formatter()
+    interactor.run_formatter()
