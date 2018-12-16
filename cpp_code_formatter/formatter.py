@@ -1,16 +1,33 @@
 import glob
 from utils import only_spaces_and_special_characters, line_beggining_spaces_edit, get_side_spaces, delete_left_right, indentation_message, only_spaces_and_newlines
+from templates import FormatTemplate
 
 
-def analyze_code(filepath, indentation, del_operator_spaces, max_len):
+def edit_dir_files(proj_path, format_template):
+    cpp_files = glob.glob(proj_path + "/*.cpp")
+    for cpp_file in cpp_files:
+        print("EDITING FILE ", cpp_file)
+        edit_code_by_template(cpp_file, format_template)
+        print("EDITED.")
+
+
+def analyze_dir_files(proj_path, format_template):
+    cpp_files = glob.glob(proj_path + "/*.cpp")
+    for cpp_file in cpp_files:
+        print("ANALYZING FILE ", cpp_file)
+        analyze_code(cpp_file, format_template, 80)
+        print("ANALYZED.")
+
+
+def analyze_code(filepath, format_template, max_len):
     file = open(filepath, mode='r')
     code = file.readlines()
     nesting = 0
     i = 0
     in_for = 0
     for line in code:
-        if len(line) > 80:
-            print("In line ", i + 1, "too many characters (should be <= 80)")
+        if len(line) > max_len:
+            print("In line ", i + 1, "too many characters (should be <= " + str(max_len) + ")")
         i += 1
         spaces = 0
 
@@ -30,19 +47,16 @@ def analyze_code(filepath, indentation, del_operator_spaces, max_len):
                 ending = line[n + 1:]
                 if not only_spaces_and_special_characters(ending):
                     print("Move text after opening braces to separate line (line number ", i, ")")
-                break
             elif symbol == '}':
                 nesting -= 1
-                needed_spaces = indentation * nesting - spaces
+                needed_spaces = format_template.indentation * nesting - spaces
                 indentation_message(needed_spaces, i)
                 n = line.find('}')
                 ending = line[n + 1:]
                 if not only_spaces_and_special_characters(ending):
                     print("Move closing braces to separate line (line number ", i, ")")
-
-                break
             elif symbol == ';':
-                new_line = line_beggining_spaces_edit(indentation, spaces, nesting, line)
+                new_line = line_beggining_spaces_edit(format_template.indentation, spaces, nesting, line)
                 if in_for > 0:
                     in_for -= 1
                 else:
@@ -50,28 +64,18 @@ def analyze_code(filepath, indentation, del_operator_spaces, max_len):
                     ending = new_line[n + 1:]
                     if not only_spaces_and_special_characters(ending):
                         print("Move text after semicolon to separate line (line number ", i, ")")
-                    break
 
-        needed_spaces = indentation * nesting - spaces
+        needed_spaces = format_template.indentation * nesting - spaces
         indentation_message(needed_spaces, i)
 
 
-
-def edit_dir_files(proj_path, indentation, del_operator_spaces, edit):
-    cpp_files = glob.glob(proj_path + "/*.cpp")
-    for cpp_file in cpp_files:
-        if edit:
-            edit_code(cpp_file, indentation, del_operator_spaces)
-        else:
-            analyze_code(cpp_file, indentation, del_operator_spaces, 80)
-
-def edit_code(filepath, indentation, del_operator_spaces):
-    fix_indentations(filepath, indentation, True)
-    fix_operator_spaces(filepath, del_operator_spaces)
-    new_lines_between_blocks(filepath, 3)
+def edit_code_by_template(filepath, format_template):
+    fix_indentations(filepath, format_template.indentation)
+    fix_operator_spaces(filepath, format_template.operator_spaces)
+    new_lines_between_blocks(filepath, format_template.lines_between_blocks)
 
 
-def fix_indentations(filepath, indentation, edit):
+def fix_indentations(filepath, indentation):
     file = open(filepath, mode='r')
     code = file.readlines()
     nesting = 0
