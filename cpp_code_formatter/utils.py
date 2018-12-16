@@ -63,4 +63,7 @@ def indentation_message(needed_spaces, line_num):
     elif needed_spaces < 0:
         print("Delete", needed_spaces, "spaces from line number ", line_num)
 
-
+def only_spaces_and_newlines(line):
+    for symbol in line:
+        if symbol != ' ' and symbol != '\n':
+            return False

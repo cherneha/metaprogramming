@@ -1,5 +1,5 @@
 import glob
-from utils import only_spaces_and_special_characters, line_beggining_spaces_edit, get_side_spaces, delete_left_right, indentation_message
+from utils import only_spaces_and_special_characters, line_beggining_spaces_edit, get_side_spaces, delete_left_right, indentation_message, only_spaces_and_newlines
 
 
 def run_formatter():
@@ -48,7 +48,6 @@ def analyze_code(filepath, indentation, del_operator_spaces, max_len):
         if len(line) > 80:
             print("In line ", i + 1, "too many characters (should be <= 80)")
         i += 1
-        j = 0
         spaces = 0
 
         if line.find(' for ') > 0 or line.find(' for(') > 0 or line.find('for ') == 0 or line.find('for(') == 0:
@@ -94,9 +93,6 @@ def analyze_code(filepath, indentation, del_operator_spaces, max_len):
 
 
 
-
-
-
 def edit_dir_files(proj_path, indentation, del_operator_spaces, edit):
     cpp_files = glob.glob(proj_path + "/*.cpp")
     for cpp_file in cpp_files:
@@ -108,6 +104,7 @@ def edit_dir_files(proj_path, indentation, del_operator_spaces, edit):
 def edit_code(filepath, indentation, del_operator_spaces):
     fix_indentations(filepath, indentation, True)
     fix_operator_spaces(filepath, del_operator_spaces)
+    new_lines_between_blocks(filepath, 3)
 
 
 def fix_indentations(filepath, indentation, edit):
@@ -135,7 +132,6 @@ def fix_indentations(filepath, indentation, edit):
                 n = new_line.find('{')
                 ending = new_line[n + 1:]
                 if not only_spaces_and_special_characters(ending):
-                    print(ending)
                     code = [ending] + code
                     new_line = new_line[:(n + 1)] + '\n'
                 break
@@ -145,7 +141,6 @@ def fix_indentations(filepath, indentation, edit):
                 ending = line[n + 1:]
                 new_line = line_beggining_spaces_edit(indentation, spaces, nesting, line)
                 if not only_spaces_and_special_characters(ending):
-                    print(ending)
                     code = [ending] + code
                     new_doc.append(' ' * indentation * nesting + '}\n');
                     new_line = new_line[:n]
@@ -201,11 +196,51 @@ def fix_operator_spaces(filepath, del_spaces):
     f.writelines(new_lines)
 
 
+def new_lines_between_blocks(filepath, n):
+    file = open(filepath, mode='r')
+    code = file.readlines()
+    nesting = 0
+    file.close()
+    file = open(filepath, mode='w')
+    new_lines = []
+
+    i = 0
+    while i < len(code):
+        line = code[i]
+        new_lines.append(line)
+        for symbol in line:
+            if symbol == '{':
+                nesting += 1
+                break
+            elif symbol == '}':
+                nesting -= 1
+                if nesting == 0:
+                    free_lines = 0
+                    j = i + 1
+                    while only_spaces_and_newlines(code[j]):
+                        free_lines += 1
+                        j += 1
+                    free_lines_diff = n - free_lines
+                    if free_lines_diff < 0:
+                        i -= free_lines_diff
+                    else:
+                        while free_lines_diff > 0:
+                            free_lines_diff -= 1
+                            new_lines.append('\n')
+                break
+
+        i += 1
+
+    file.writelines(new_lines)
+
+
 def go_from_plus(x):
     return go_from_plus_or_minus('+', x)
 
 def go_from_minus(x):
-    return go_from_plus_or_minus('-', x)
+    res = go_from_plus_or_minus('-', x)
+    if res == 9 and x == '>': return 10
+    else: return res
 
 def go_from_plus_or_minus(op, x):
     if x == op:
